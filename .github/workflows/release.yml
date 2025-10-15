@@ -9,7 +9,7 @@ jobs:
   release-plz-release:
     name: Release-plz
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'koejdga' }}
+    if: ${{ github.repository_owner == 'berkus' }}
 
     permissions:
       contents: write
