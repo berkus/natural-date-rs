@@ -1,8 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use anyhow::{anyhow, Result};
-    use natural_date_parser::{DateParser, Rule};
-    use pest::Parser;
+    use {
+        anyhow::{Result, anyhow},
+        natural_date_rs::{DateParser, Rule},
+        pest::Parser,
+    };
 
     fn parse_rule(rule: Rule, input: &str) -> Result<()> {
         DateParser::parse(rule, input)

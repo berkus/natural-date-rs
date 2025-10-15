@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use {chrono::prelude::*, natural_date_parser::date_parser};
+    use {chrono::prelude::*, natural_date_rs::date_parser};
 
     #[test]
     fn test_in_15_minutes() {

@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use chrono::{Datelike, Duration, Local, TimeZone, Timelike, Weekday};
-    use natural_date_parser::date_parser;
-    use natural_date_parser::{ParseDateError, Rule};
+    use {
+        chrono::{Datelike, Duration, Local, TimeZone, Timelike, Weekday},
+        natural_date_rs::{ParseDateError, Rule, date_parser},
+    };
 
     #[test]
     fn test_change_time_valid() {

@@ -9,7 +9,7 @@ pub struct DateParser;
 #[derive(Debug, Error)]
 pub enum ParseDateError {
     /// Error variant for failed date parsing. Includes the error message.
-    #[error("Failed to parse date:\n{0}")]
+    #[error("Failed to parse date: {0}")]
     ParseError(String),
 }
 

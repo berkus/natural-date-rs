@@ -1,9 +1,10 @@
 #[cfg(test)]
 mod tests {
     mod helping_functions {
-        use chrono::{DateTime, Weekday};
-        use chrono::{Datelike, Local};
-        use natural_date_parser::ParseDateError;
+        use {
+            chrono::{DateTime, Datelike, Local, Weekday},
+            natural_date_rs::ParseDateError,
+        };
 
         pub(super) fn assert_weekday_result(
             result: Result<Weekday, ParseDateError>,
@@ -28,9 +29,10 @@ mod tests {
 
     #[cfg(test)]
     mod process_am_pm_tests {
-        use natural_date_parser::date_parser::process_is_pm;
-        use natural_date_parser::{DateParser, Rule};
-        use pest::Parser;
+        use {
+            natural_date_rs::{DateParser, Rule, date_parser::process_is_pm},
+            pest::Parser,
+        };
 
         #[test]
         fn test_process_am_pm_for_pm() {
@@ -65,10 +67,11 @@ mod tests {
 
     #[cfg(test)]
     mod process_weekday_tests {
-        use super::helping_functions::assert_weekday_result;
-        use chrono::Weekday;
-        use natural_date_parser::date_parser::process_weekday;
-        use natural_date_parser::{ParseDateError, Rule};
+        use {
+            super::helping_functions::assert_weekday_result,
+            chrono::Weekday,
+            natural_date_rs::{ParseDateError, Rule, date_parser::process_weekday},
+        };
 
         #[test]
         fn test_process_weekday_valid() {
@@ -97,10 +100,11 @@ mod tests {
 
     #[cfg(test)]
     mod process_specific_day_tests {
-        use super::helping_functions::assert_specific_day_result;
-        use chrono::{Local, Weekday};
-        use natural_date_parser::date_parser::process_specific_day;
-        use natural_date_parser::{ParseDateError, Rule};
+        use {
+            super::helping_functions::assert_specific_day_result,
+            chrono::{Local, Weekday},
+            natural_date_rs::{ParseDateError, Rule, date_parser::process_specific_day},
+        };
 
         #[test]
         fn test_process_specific_day_valid() {
@@ -153,11 +157,13 @@ mod tests {
 
     #[cfg(test)]
     mod process_specific_time_tests {
-        use chrono::{DateTime, Local, TimeZone, Timelike};
-        use natural_date_parser::date_parser::process_specific_time;
-        use natural_date_parser::{DateParser, ParseDateError, Rule};
-        use pest::iterators::Pair;
-        use pest::Parser;
+        use {
+            chrono::{DateTime, Local, TimeZone, Timelike},
+            natural_date_rs::{
+                DateParser, ParseDateError, Rule, date_parser::process_specific_time,
+            },
+            pest::{Parser, iterators::Pair},
+        };
 
         fn get_test_datetime() -> DateTime<Local> {
             Local.with_ymd_and_hms(2024, 11, 11, 12, 0, 0).unwrap()
@@ -251,11 +257,11 @@ mod tests {
 
     #[cfg(test)]
     mod process_relative_term_tests {
-        use chrono::DateTime;
-        use chrono::{Datelike, Duration, Local};
-        use natural_date_parser::date_parser::process_relative_term;
-        use natural_date_parser::{DateParser, Rule};
-        use pest::Parser;
+        use {
+            chrono::{DateTime, Datelike, Duration, Local},
+            natural_date_rs::{DateParser, Rule, date_parser::process_relative_term},
+            pest::Parser,
+        };
 
         fn test_relative_term_rule(input: &str, expected_datetime: DateTime<Local>) {
             let pair = DateParser::parse(Rule::relative_term, input)
@@ -291,10 +297,11 @@ mod tests {
 
     #[cfg(test)]
     mod process_relative_date_tests {
-        use chrono::{Datelike, Duration, Local};
-        use natural_date_parser::date_parser::process_relative_date;
-        use natural_date_parser::{DateParser, Rule};
-        use pest::Parser;
+        use {
+            chrono::{Datelike, Duration, Local},
+            natural_date_rs::{DateParser, Rule, date_parser::process_relative_date},
+            pest::Parser,
+        };
 
         #[test]
         fn test_process_relative_date_next_monday() {
