@@ -22,4 +22,4 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
       - name: Run example
-        run: cargo run -- "yesterday"
+        run: cargo run --example simple -- yesterday
