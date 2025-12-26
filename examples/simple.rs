@@ -1,4 +1,4 @@
-use {natural_date_rs::*, std::env};
+use {natural_date_rs as date_parser, std::env};
 
 /// CLI interface
 fn main() -> anyhow::Result<()> {
