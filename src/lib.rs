@@ -1,4 +1,4 @@
-/// Module for parsing and processing date-related expressions.
+/// Library for parsing and processing date-related expressions.
 use {
     chrono::{DateTime, Datelike, Duration, Local, TimeZone, Weekday},
     chronoutil::delta::shift_months_opt,
@@ -221,14 +221,21 @@ fn process_specific_day_and_time(
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
             Rule::specific_day => {
-                datetime = process_specific_day(inner_pair.as_rule(), datetime)?;
+                if let Some(inner) = inner_pair.clone().into_inner().next() {
+                    datetime = process_specific_day(inner.as_rule(), datetime)?;
+                } else {
+                    return Err(ParseDateError::ParseError(format!(
+                        "Invalid day of week rule in specific day and time: {:?}",
+                        inner_pair.as_rule()
+                    )));
+                }
             }
             Rule::specific_time => {
                 datetime = process_specific_time(inner_pair, datetime)?;
             }
             _ => {
                 return Err(ParseDateError::ParseError(format!(
-                    "Unexpected rule in specific date and time: {:?}",
+                    "Unexpected rule in specific day and time: {:?}",
                     inner_pair.as_rule()
                 )));
             }
@@ -561,15 +568,13 @@ fn shift_to_weekday(
                 (diff + 7) as i32
             }
         }
-        _ => -100,
+        _ => {
+            return Err(ParseDateError::ParseError(format!(
+                "Expected last, this or next, got {:?}",
+                direction
+            )));
+        }
     };
-
-    if days_difference < -7 {
-        return Err(ParseDateError::ParseError(format!(
-            "Expected last, this or next, got {:?}",
-            direction
-        )));
-    }
 
     Ok(now + Duration::days(days_difference as i64))
 }
@@ -750,7 +755,7 @@ mod tests {
     }
 
     #[test]
-    fn test_specific_day_and_time() -> Result<()> {
+    fn test_specific_day_and_time_rules() -> Result<()> {
         let valid_cases = vec![
             "Monday at 10:00 AM",
             "Wednesday at 5:30 PM",
@@ -1322,6 +1327,79 @@ mod tests {
     }
 
     #[cfg(test)]
+    mod process_specific_day_and_time_tests {
+        use {
+            crate::parser::{DateParser, Rule},
+            chrono::{DateTime, Datelike, Local, TimeZone, Timelike, Weekday},
+            pest::{Parser, iterators::Pair},
+        };
+
+        fn get_test_datetime() -> DateTime<Local> {
+            Local.with_ymd_and_hms(2025, 9, 7, 12, 0, 0).unwrap()
+        }
+
+        #[expect(clippy::result_large_err)]
+        fn parse_input(input: &str) -> Result<Pair<'_, Rule>, pest::error::Error<Rule>> {
+            let pair = DateParser::parse(Rule::specific_day_and_time, input)?;
+            Ok(pair.into_iter().next().unwrap())
+        }
+
+        #[test]
+        fn test_process_specific_day_and_time_am() {
+            let datetime = get_test_datetime();
+            let input = "monday at 9:45AM";
+
+            let pair = parse_input(input).unwrap();
+
+            let result = crate::process_specific_day_and_time(pair, datetime);
+
+            assert!(result.is_ok());
+            let modified_datetime = result.unwrap();
+            assert_eq!(modified_datetime.hour(), 9);
+            assert_eq!(modified_datetime.minute(), 45);
+            assert_eq!(modified_datetime.day(), 8);
+            assert_eq!(modified_datetime.weekday(), Weekday::Mon);
+        }
+    }
+
+    #[cfg(test)]
+    mod process_specific_date_and_time_tests {
+        use {
+            crate::parser::{DateParser, Rule},
+            chrono::{DateTime, Datelike, Local, TimeZone, Timelike},
+            pest::{Parser, iterators::Pair},
+        };
+
+        fn get_test_datetime() -> DateTime<Local> {
+            Local.with_ymd_and_hms(2025, 9, 7, 12, 0, 0).unwrap()
+        }
+
+        #[expect(clippy::result_large_err)]
+        fn parse_input(input: &str) -> Result<Pair<'_, Rule>, pest::error::Error<Rule>> {
+            let pair = DateParser::parse(Rule::specific_date_and_time, input)?;
+            Ok(pair.into_iter().next().unwrap())
+        }
+
+        #[test]
+        fn test_process_specific_date_and_time_am() {
+            let datetime = get_test_datetime();
+            let input = "2025.11.11 at 9:45AM";
+
+            let pair = parse_input(input).unwrap();
+
+            let result = crate::process_specific_date_and_time(pair, datetime);
+
+            assert!(result.is_ok());
+            let modified_datetime = result.unwrap();
+            assert_eq!(modified_datetime.hour(), 9);
+            assert_eq!(modified_datetime.minute(), 45);
+            assert_eq!(modified_datetime.year(), 2025);
+            assert_eq!(modified_datetime.month(), 11);
+            assert_eq!(modified_datetime.day(), 11);
+        }
+    }
+
+    #[cfg(test)]
     mod process_relative_term_tests {
         use {
             crate::parser::{DateParser, Rule},
@@ -1476,13 +1554,33 @@ mod tests {
     // }
 
     #[test]
+    fn test_specific_day_and_time() {
+        assert_eq!(
+            crate::from_string_with_reference(
+                "monday at 1:33 PM",
+                Local.with_ymd_and_hms(2025, 9, 7, 21, 0, 0).unwrap()
+            )
+            .unwrap(),
+            Local.with_ymd_and_hms(2025, 9, 8, 13, 33, 0).unwrap()
+        );
+        assert_eq!(
+            crate::from_string_with_reference(
+                "tuesday at 1 Pm",
+                Local.with_ymd_and_hms(2025, 9, 7, 21, 0, 0).unwrap()
+            )
+            .unwrap(),
+            Local.with_ymd_and_hms(2025, 9, 9, 13, 0, 0).unwrap()
+        );
+    }
+
+    #[test]
     fn test_specific_date_and_time() {
         assert_eq!(
-            crate::from_string("2025/Sep/27 at 1:33 PM",).unwrap(),
+            crate::from_string("2025/Sep/27 at 1:33 PM").unwrap(),
             Local.with_ymd_and_hms(2025, 9, 27, 13, 33, 0).unwrap()
         );
         assert_eq!(
-            crate::from_string("2025/Sep/7 at 1 Pm",).unwrap(),
+            crate::from_string("2025/Sep/7 at 1 Pm").unwrap(),
             Local.with_ymd_and_hms(2025, 9, 7, 13, 0, 0).unwrap()
         );
     }
