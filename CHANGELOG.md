@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/berkus/natural-date-rs/compare/v0.2.0...v0.3.0) - 2025-12-27
+
+### Other
+
+- 🐛 Fix specific_day_and_time parsing bug
+- 🐛 Reduce public API surface to necessary two functions
+- 🩹 Move example binary to examples/
+- 📋 Update readme
+
 ## [0.2.0](https://github.com/berkus/natural-date-rs/releases/tag/v0.2.0) - 2025-10-15
 
 ### Fixed
